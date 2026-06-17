@@ -42,6 +42,14 @@ jobs:
           MONGODB_PORT: "27017"
         run: bundle exec rspec
 
+      - name: Upload coverage to Coveralls
+        if: matrix.ruby == '3.3'
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          format: simplecov
+          file: coverage/.resultset.json
+
       - name: Upload coverage report
         if: matrix.ruby == '3.3'
         uses: actions/upload-artifact@v4

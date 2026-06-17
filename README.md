@@ -1,5 +1,9 @@
 # ruby_llm-mongoid
 
+[![CI](https://github.com/washu/ruby_llm-mongoid/actions/workflows/ci.yml/badge.svg)](https://github.com/washu/ruby_llm-mongoid/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/washu/ruby_llm-mongoid/badge.svg?branch=main)](https://coveralls.io/github/washu/ruby_llm-mongoid?branch=main)
+[![Gem Version](https://img.shields.io/gem/v/ruby_llm-mongoid)](https://rubygems.org/gems/ruby_llm-mongoid)
+
 Drop-in Mongoid persistence for [ruby_llm](https://github.com/crmne/ruby_llm). Use MongoDB as your Rails model layer instead of ActiveRecord — same `acts_as_chat` API, same feel.
 
 ## Requirements

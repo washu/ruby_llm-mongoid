@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "Drop-in Mongoid replacement for ruby_llm's ActiveRecord integration. " \
                      "Provides acts_as_chat, acts_as_message, acts_as_tool_call, and acts_as_model " \
                      "macros backed by MongoDB via Mongoid."
-  spec.homepage = "https://github.com/SalScotto/ruby_llm-mongoid"
+  spec.homepage = "https://github.com/washu/ruby_llm-mongoid"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 
