@@ -1,0 +1,6 @@
+class <%= chat_model_name %> < ApplicationRecord
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  acts_as_chat
+end

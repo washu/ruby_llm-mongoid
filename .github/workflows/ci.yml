@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "3.4"
+          - "3.3"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start MongoDB 8.0
+        run: |
+          docker run --detach --rm \
+            --name mongo-test \
+            --publish 27017:27017 \
+            mongo:8.0 --quiet
+          until docker exec mongo-test mongosh --eval "db.runCommand({ping:1})" --quiet 2>/dev/null; do
+            sleep 1
+          done
+
+      - name: Set up Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run tests
+        env:
+          MONGODB_HOST: localhost
+          MONGODB_PORT: "27017"
+        run: bundle exec rspec
+
+      - name: Upload coverage report
+        if: matrix.ruby == '3.3'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  lint:
+    runs-on: ubuntu-latest
+    name: RuboCop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop --parallel

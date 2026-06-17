@@ -1,0 +1,23 @@
+class <%= model_model_name %>
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  field :model_id,          type: String
+  field :name,              type: String
+  field :provider,          type: String
+  field :family,            type: String
+  field :model_created_at,  type: Time
+  field :context_window,    type: Integer
+  field :max_output_tokens, type: Integer
+  field :knowledge_cutoff,  type: Date
+  field :modalities,        type: Hash,   default: {}
+  field :capabilities,      type: Array,  default: []
+  field :pricing,           type: Hash,   default: {}
+  field :metadata,          type: Hash,   default: {}
+
+  index({ provider: 1, model_id: 1 }, unique: true)
+  index({ provider: 1 })
+  index({ family: 1 })
+
+  acts_as_model
+end

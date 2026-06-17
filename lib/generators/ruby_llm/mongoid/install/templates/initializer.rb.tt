@@ -1,0 +1,6 @@
+RubyLLM.configure do |config|
+  config.openai_api_key    = ENV.fetch("OPENAI_API_KEY", nil)
+  config.anthropic_api_key = ENV.fetch("ANTHROPIC_API_KEY", nil)
+  # config.default_model   = "gpt-4.1-nano"
+  # config.model_registry_class = "<%= model_model_name %>"
+end

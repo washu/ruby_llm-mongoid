@@ -1,0 +1,55 @@
+AllCops:
+  TargetRubyVersion: 3.1
+  SuggestExtensions: false
+  NewCops: enable
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/Documentation:
+  Enabled: false
+
+# Metrics are disabled for spec files (standard RuboCop convention).
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "lib/generators/**/*"
+    - "*.gemspec"
+
+# The acts_as_* macros and the chat/model persistence methods are complex by
+# design — they mirror the ruby_llm ActiveRecord integration and must handle
+# many edge cases. Disable length/complexity metrics for these files.
+Metrics/MethodLength:
+  Exclude:
+    - "lib/ruby_llm/mongoid/acts_as.rb"
+    - "lib/ruby_llm/mongoid/chat_methods.rb"
+    - "lib/ruby_llm/mongoid/grid_fs_attachment.rb"
+    - "lib/ruby_llm/mongoid/model_methods.rb"
+    - "lib/ruby_llm/mongoid/message_methods.rb"
+    - "spec/support/openai_stubs.rb"
+
+Metrics/AbcSize:
+  Exclude:
+    - "lib/ruby_llm/mongoid/acts_as.rb"
+    - "lib/ruby_llm/mongoid/chat_methods.rb"
+    - "lib/ruby_llm/mongoid/grid_fs_attachment.rb"
+    - "lib/ruby_llm/mongoid/model_methods.rb"
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - "lib/ruby_llm/mongoid/chat_methods.rb"
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - "lib/ruby_llm/mongoid/chat_methods.rb"
+
+Metrics/ModuleLength:
+  Exclude:
+    - "lib/ruby_llm/mongoid/chat_methods.rb"
+
+Metrics/ClassLength:
+  Exclude:
+    - "lib/ruby_llm/mongoid/acts_as.rb"

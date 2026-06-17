@@ -1,0 +1,20 @@
+class <%= message_model_name %>
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  field :role,                type: String
+  field :content,             type: String
+  field :content_raw,         type: Hash
+  field :thinking_text,       type: String
+  field :thinking_signature,  type: String
+  field :thinking_tokens,     type: Integer
+  field :input_tokens,        type: Integer
+  field :output_tokens,       type: Integer
+  field :cached_tokens,       type: Integer
+  field :cache_creation_tokens, type: Integer
+
+  index({ role: 1 })
+  index({ created_at: 1 })
+
+  acts_as_message
+end

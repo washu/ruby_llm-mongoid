@@ -1,0 +1,15 @@
+development:
+  clients:
+    default:
+      database: ruby_llm_mongoid_development
+      hosts:
+        - localhost:27017
+
+test:
+  clients:
+    default:
+      database: ruby_llm_mongoid_test
+      hosts:
+        - <%= ENV.fetch('MONGODB_HOST', 'localhost') %>:<%= ENV.fetch('MONGODB_PORT', '27017') %>
+      options:
+        server_selection_timeout: 5
