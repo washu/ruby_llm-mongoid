@@ -31,6 +31,21 @@ module RubyLLM
         field :gridfs_file_ids, type: Array, default: []
 
         before_destroy :delete_gridfs_files
+        after_find :cleanup_gridfs_tempfiles
+        after_save :cleanup_gridfs_tempfiles
+      end
+
+      # Cleanup tempfiles created during download
+      def cleanup_gridfs_tempfiles
+        return unless defined?(@_gridfs_tempfiles) && @_gridfs_tempfiles
+
+        @_gridfs_tempfiles.each do |f|
+          f.close
+          f.unlink
+        rescue StandardError => e
+          RubyLLM.logger.warn "RubyLLM: Failed to cleanup GridFS tempfile #{f.path}: #{e.message}"
+        end
+        @_gridfs_tempfiles = []
       end
 
       # Builds a RubyLLM::Content that streams each stored file back from GridFS.

@@ -31,10 +31,13 @@ module RubyLLM
       end
 
       def standalone_mongod_error?(error)
+        # Error code 20 is "IllegalOperation" which is returned when transactions
+        # are used on a standalone mongod.
+        return true if error.respond_to?(:code) && error.code == 20
+
         msg = error.message
         msg.include?("Transaction numbers are only allowed") ||
-          msg.include?("no such command: 'startTransaction'") ||
-          error.try(:code) == 20
+          msg.include?("no such command: 'startTransaction'")
       end
     end
   end

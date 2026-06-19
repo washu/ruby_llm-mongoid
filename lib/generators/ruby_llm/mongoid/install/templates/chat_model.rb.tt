@@ -1,4 +1,4 @@
-class <%= chat_model_name %> < ApplicationRecord
+class <%= chat_model_name %>
   include Mongoid::Document
   include Mongoid::Timestamps
 

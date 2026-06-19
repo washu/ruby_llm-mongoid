@@ -20,15 +20,20 @@ module RubyLLM
         RubyLLM.config.model_registry_source ||= RubyLLM::Mongoid::MongoidSource.new
       end
 
+      @@install_lock = Mutex.new
+
       # Hook executed when a class does `include Mongoid::Document`.
       # Injects our class-method macros onto every Mongoid document automatically
       # so users don't have to `include RubyLLM::Mongoid::ActsAs` explicitly.
       def self.install!
         return unless defined?(::Mongoid::Document)
-        return if ::Mongoid::Document.respond_to?(:acts_as_chat)
 
-        ::Mongoid::Document.module_eval do
-          include RubyLLM::Mongoid::ActsAs
+        @@install_lock.synchronize do
+          return if ::Mongoid::Document.respond_to?(:acts_as_chat)
+
+          ::Mongoid::Document.module_eval do
+            include RubyLLM::Mongoid::ActsAs
+          end
         end
       end
 
