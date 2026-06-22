@@ -20,7 +20,7 @@ module RubyLLM
         RubyLLM.config.model_registry_source ||= RubyLLM::Mongoid::MongoidSource.new
       end
 
-      @@install_lock = Mutex.new
+      @@install_lock = Mutex.new # rubocop:disable Style/ClassVars
 
       # Hook executed when a class does `include Mongoid::Document`.
       # Injects our class-method macros onto every Mongoid document automatically
