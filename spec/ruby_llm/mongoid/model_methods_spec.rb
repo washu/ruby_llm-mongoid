@@ -58,6 +58,24 @@ RSpec.describe "acts_as_model — class methods" do
     end
   end
 
+  describe ".refresh" do
+    it "calls RubyLLM.models.refresh when available" do
+      models = double("RubyLLM::Models", refresh: true, all: [model_info])
+      allow(RubyLLM).to receive(:models).and_return(models)
+
+      expect(models).to receive(:refresh)
+      expect { LlmModel.refresh }.to change { LlmModel.count }.by(1)
+    end
+  end
+
+  describe ".write" do
+    it "persists the provided registry entries" do
+      registry = instance_double("RubyLLM::Models", all: [model_info])
+
+      expect { LlmModel.write(registry) }.to change(LlmModel, :count).by(1)
+    end
+  end
+
   describe "#to_llm" do
     it "round-trips all scalar fields" do
       m = LlmModel.create!(
@@ -81,6 +99,59 @@ RSpec.describe "acts_as_model — class methods" do
       expect(info.modalities).to be_a(RubyLLM::Model::Modalities)
       expect(info.pricing).to be_a(RubyLLM::Model::Pricing)
       expect(info.metadata).to include("custom" => true)
+    end
+
+    it "builds a RubyLLM::Model when that class is available" do
+      fake_model_class = Class.new do
+        attr_reader :attributes
+
+        def initialize(attributes)
+          @attributes = attributes
+        end
+      end
+      stub_const("RubyLLM::Model", fake_model_class)
+
+      m = LlmModel.create!(
+        model_id: "gpt-4o-mini",
+        provider: "openai",
+        name: "GPT-4o mini",
+        capabilities: [],
+        modalities: {},
+        pricing: {},
+        metadata: {}
+      )
+
+      info = m.to_llm
+      expect(info).to be_a(fake_model_class)
+      expect(info.attributes).to include(id: "gpt-4o-mini", provider: "openai")
+    end
+  end
+
+  describe "compatibility predicate helpers" do
+    let(:model_record) do
+      LlmModel.create!(
+        model_id: "gpt-4o-mini",
+        provider: "openai",
+        name: "GPT-4o mini",
+        capabilities: [],
+        modalities: {},
+        pricing: {},
+        metadata: {}
+      )
+    end
+
+    it "maps supports_vision? to supports?(:vision) when needed" do
+      llm_model = double("RubyLLM::Model", supports?: true)
+      allow(model_record).to receive(:to_llm).and_return(llm_model)
+
+      expect(model_record.supports_vision?).to be(true)
+    end
+
+    it "maps input_price_per_million to price(:input) when needed" do
+      llm_model = double("RubyLLM::Model", price: 0.15)
+      allow(model_record).to receive(:to_llm).and_return(llm_model)
+
+      expect(model_record.input_price_per_million).to eq(0.15)
     end
   end
 end

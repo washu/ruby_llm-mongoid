@@ -4,13 +4,13 @@
 [![Coverage Status](https://coveralls.io/repos/github/washu/ruby_llm-mongoid/badge.svg?branch=main)](https://coveralls.io/github/washu/ruby_llm-mongoid?branch=main)
 [![Gem Version](https://img.shields.io/gem/v/ruby_llm-mongoid)](https://rubygems.org/gems/ruby_llm-mongoid)
 
-Drop-in Mongoid persistence for [ruby_llm](https://github.com/crmne/ruby_llm). Use MongoDB as your Rails model layer instead of ActiveRecord — same `acts_as_chat` API, same feel.
+Community Mongoid persistence for [RubyLLM](https://github.com/crmne/ruby_llm). This integration lives outside RubyLLM core and lets you use MongoDB as your Rails model layer instead of ActiveRecord while keeping the same `acts_as_chat`-style API.
 
 ## Requirements
 
 - Ruby >= 3.3
 - Mongoid >= 8.0
-- ruby_llm >= 1.16
+- ruby_llm >= 1.16 (compatible with RubyLLM 2.x)
 
 ## Installation
 
@@ -164,7 +164,7 @@ msg.to_partial_path # => "messages/assistant"
 
 ### Model registry
 
-`acts_as_model` automatically registers a `MongoidSource` with `RubyLLM.config.model_registry_source`, so `RubyLLM.models` reads from MongoDB on boot instead of the bundled JSON file.
+`acts_as_model` automatically registers the Mongoid model as RubyLLM's model-registry store/source, so `RubyLLM.models` reads from MongoDB on boot instead of the bundled JSON file.
 
 ```ruby
 LlmModel.save_to_database  # seed MongoDB from the bundled model registry (run once after install)
