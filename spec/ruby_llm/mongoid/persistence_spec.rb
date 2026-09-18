@@ -77,6 +77,19 @@ RSpec.describe "LLM persistence round-trip" do
 
   describe "#with_model" do
     it "switches the chat to a different model record" do
+      resolved_model = instance_double(
+        RubyLLM::Model::Info,
+        id: "gpt-4o",
+        name: "GPT-4o",
+        provider: "openai",
+        family: "gpt-4o",
+        context_window: 128_000,
+        max_output_tokens: 16_384,
+        capabilities: [],
+        modalities: instance_double("Modalities", to_h: {}),
+        pricing: instance_double("Pricing", to_h: {}),
+        metadata: {}
+      )
       LlmModel.find_or_create_by!(model_id: "gpt-4o", provider: "openai") do |m|
         m.name = "GPT-4o"
         m.capabilities = []
@@ -85,6 +98,8 @@ RSpec.describe "LLM persistence round-trip" do
         m.metadata = {}
       end
 
+      allow(RubyLLM::Models).to receive(:resolve).and_return([resolved_model, nil])
+      allow(chat).to receive(:to_llm).and_return(double("RubyLLM::Chat", with_model: true))
       stub_openai_chat(content: "Ok.", model: "gpt-4o")
       chat.with_model("gpt-4o")
       expect(chat.model_id).to eq("gpt-4o")

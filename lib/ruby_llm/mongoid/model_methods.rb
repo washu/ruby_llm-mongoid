@@ -7,7 +7,7 @@ module RubyLLM
   module Mongoid
     # Mixes into a Mongoid document that represents a persisted LLM model record.
     # Mirrors RubyLLM::ActiveRecord::ModelMethods.
-    module ModelMethods
+    module ModelMethods # rubocop:disable Metrics/ModuleLength
       extend ActiveSupport::Concern
 
       class_methods do # rubocop:disable Metrics/BlockLength
@@ -36,7 +36,7 @@ module RubyLLM
           save_to_database
         end
 
-        alias refresh! refresh
+        alias_method :refresh!, :refresh
 
         def save_to_database(registry = RubyLLM.models)
           registry.all.each do |model_info|
@@ -147,8 +147,6 @@ module RubyLLM
       def cache_creation_input_price_per_million
         model_price(:cache_write, legacy_method: :cache_creation_input_price_per_million)
       end
-
-      private
 
       def model_class
         return RubyLLM::Model if defined?(RubyLLM::Model) && RubyLLM::Model.is_a?(Class)

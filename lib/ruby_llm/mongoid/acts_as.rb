@@ -12,7 +12,7 @@ module RubyLLM
     # Provides acts_as_chat, acts_as_message, acts_as_tool_call, and acts_as_model
     # class macros for Mongoid documents. Include this module (or let the Railtie do it)
     # and call the appropriate macro inside your document class.
-    module ActsAs
+    module ActsAs # rubocop:disable Metrics/ModuleLength
       extend ActiveSupport::Concern
 
       def self.included(base)
@@ -204,7 +204,7 @@ module RubyLLM
 
       private
 
-      def resolve_model_class
+      def resolve_model_class # rubocop:disable Metrics/CyclomaticComplexity
         return @model_class if @model_class
 
         if RubyLLM.config.respond_to?(:model_registry_store)

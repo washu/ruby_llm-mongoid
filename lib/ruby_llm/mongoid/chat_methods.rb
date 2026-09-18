@@ -128,19 +128,22 @@ module RubyLLM
         self
       end
 
-      def with_params(*args, **kwargs, &block)
-        dispatch_chat_call(:with_params, *args, fallback: :with_provider_options, **kwargs, &block)
+      def with_params(*, **, &)
+        dispatch_chat_call(:with_params, *, fallback: :with_provider_options, **, &)
         self
       end
 
-      def with_provider_options(*args, **kwargs, &block)
-        dispatch_chat_call(:with_provider_options, *args, fallback: :with_params, **kwargs, &block)
+      def with_provider_options(*, **, &)
+        dispatch_chat_call(:with_provider_options, *, fallback: :with_params, **, &)
         self
       end
 
       def with_context(value)
         self.context = value
-        @chat&.with_context(value) if @chat&.respond_to?(:with_context)
+        chat = @chat
+        return self unless chat.respond_to?(:with_context)
+
+        chat.with_context(value)
         self
       end
 
@@ -484,11 +487,11 @@ module RubyLLM
         record.class.fields.key?(name.to_s)
       end
 
-      def dispatch_chat_call(method_name, *args, fallback: nil, **kwargs, &block)
+      def dispatch_chat_call(method_name, *, fallback: nil, **, &)
         chat_method = [method_name, fallback].compact.find { |name| to_llm.respond_to?(name) }
         raise NoMethodError, "undefined method `#{method_name}` for #{to_llm.class}" unless chat_method
 
-        to_llm.public_send(chat_method, *args, **kwargs, &block)
+        to_llm.public_send(chat_method, *, **, &)
       end
 
       def resolve_llm_model(model_name, provider:, config:)
@@ -499,11 +502,25 @@ module RubyLLM
       end
 
       def models_resolve_assume_model_exists_keyword
-        method_accepts_keyword?(RubyLLM::Models.method(:resolve), :assume_model_exists) ? :assume_model_exists : :assume_exists
+        if method_accepts_keyword?(RubyLLM::Models.method(:resolve), :assume_model_exists)
+          :assume_model_exists
+        else
+          :assume_exists
+        end
       end
 
       def chat_assume_model_exists_keyword
-        method_accepts_keyword?(to_llm.method(:with_model), :assume_model_exists) ? :assume_model_exists : :assume_exists
+        method = if defined?(RubyLLM::Chat)
+                   RubyLLM::Chat.instance_method(:with_model)
+                 else
+                   to_llm.method(:with_model)
+                 end
+
+        if method_accepts_keyword?(method, :assume_model_exists)
+          :assume_model_exists
+        else
+          :assume_exists
+        end
       end
 
       def method_accepts_keyword?(method, keyword)
