@@ -12,12 +12,12 @@ module RubyLLM
     # Provides acts_as_chat, acts_as_message, acts_as_tool_call, and acts_as_model
     # class macros for Mongoid documents. Include this module (or let the Railtie do it)
     # and call the appropriate macro inside your document class.
-    module ActsAs
+    module ActsAs # rubocop:disable Metrics/ModuleLength
       extend ActiveSupport::Concern
 
       def self.included(base)
         super
-        RubyLLM.config.model_registry_source ||= RubyLLM::Mongoid::MongoidSource.new
+        register_legacy_model_registry_source!
       end
 
       @@install_lock = Mutex.new # rubocop:disable Style/ClassVars
@@ -35,6 +35,25 @@ module RubyLLM
             include RubyLLM::Mongoid::ActsAs
           end
         end
+      end
+
+      def self.configure_model_registry!(model_class)
+        if RubyLLM.config.respond_to?(:model_registry_store) && RubyLLM.config.model_registry_store.nil?
+          RubyLLM.config.model_registry_store = model_class
+        end
+
+        if RubyLLM.config.respond_to?(:model_registry_class) && RubyLLM.config.model_registry_class.nil?
+          RubyLLM.config.model_registry_class = model_class.name
+        end
+
+        register_legacy_model_registry_source!(model_class)
+      end
+
+      def self.register_legacy_model_registry_source!(model_class = nil)
+        return unless RubyLLM.config.respond_to?(:model_registry_source)
+        return unless RubyLLM.config.model_registry_source.nil?
+
+        RubyLLM.config.model_registry_source = RubyLLM::Mongoid::MongoidSource.new(model_class)
       end
 
       class_methods do # rubocop:disable Metrics/BlockLength
@@ -86,6 +105,8 @@ module RubyLLM
           has_many chats, class_name: self.chat_class
 
           define_method(:chats_association) { send(chats_association_name) }
+
+          RubyLLM::Mongoid::ActsAs.configure_model_registry!(self)
         end
 
         # -----------------------------------------------------------------------
@@ -167,6 +188,10 @@ module RubyLLM
     # Model registry source — plugs into RubyLLM.config.model_registry_source
     # ---------------------------------------------------------------------------
     class MongoidSource
+      def initialize(model_class = nil)
+        @model_class = model_class
+      end
+
       def read
         model_class = resolve_model_class
         return [] unless model_class.respond_to?(:all)
@@ -179,7 +204,18 @@ module RubyLLM
 
       private
 
-      def resolve_model_class
+      def resolve_model_class # rubocop:disable Metrics/CyclomaticComplexity
+        return @model_class if @model_class
+
+        if RubyLLM.config.respond_to?(:model_registry_store)
+          klass = RubyLLM.config.model_registry_store
+          return klass if klass.is_a?(Class)
+        end
+
+        return LlmModel if defined?(LlmModel)
+
+        return unless RubyLLM.config.respond_to?(:model_registry_class)
+
         klass = RubyLLM.config.model_registry_class
         return klass unless klass.is_a?(String)
 

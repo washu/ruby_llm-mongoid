@@ -16,7 +16,7 @@ module RubyLLM
         before_save :resolve_model_from_strings
       end
 
-      attr_accessor :assume_model_exists, :context
+      attr_accessor :assume_model_exists, :context, :protocol
 
       # -------------------------------------------------------------------------
       # Model / provider assignment
@@ -59,11 +59,14 @@ module RubyLLM
 
       def to_llm
         model_record = model_association
-        @chat ||= (context || RubyLLM).chat(
+        chat_attributes = {
           model: model_record.model_id,
           provider: model_record.provider.to_sym,
           assume_model_exists: assume_model_exists || false
-        )
+        }
+        chat_attributes[:protocol] = protocol if protocol
+
+        @chat ||= (context || RubyLLM).chat(**chat_attributes)
         @chat.reset_messages!
 
         ordered_messages = order_messages_for_llm(messages_association.to_a)
@@ -97,14 +100,21 @@ module RubyLLM
         self
       end
 
-      def with_model(model_name, provider: nil, assume_exists: false)
+      def with_model(model_name, provider: nil, protocol: nil, assume_exists: false, assume_model_exists: nil)
+        assume_model_exists = assume_exists if assume_model_exists.nil?
         self.model = model_name
         self.provider = provider if provider
-        self.assume_model_exists = assume_exists
+        self.protocol = protocol
+        self.assume_model_exists = assume_model_exists
         resolve_model_from_strings
         save!
-        to_llm.with_model(model_association.model_id, provider: model_association.provider.to_sym,
-                                                      assume_exists: assume_exists)
+        chat_model_options = {
+          provider: model_association.provider.to_sym
+        }
+        chat_model_options[:protocol] = protocol if protocol
+        chat_model_options[chat_assume_model_exists_keyword] = assume_model_exists
+
+        to_llm.with_model(model_association.model_id, **chat_model_options)
         self
       end
 
@@ -118,8 +128,22 @@ module RubyLLM
         self
       end
 
-      def with_params(...)
-        to_llm.with_params(...)
+      def with_params(*, **, &)
+        dispatch_chat_call(:with_params, *, fallback: :with_provider_options, **, &)
+        self
+      end
+
+      def with_provider_options(*, **, &)
+        dispatch_chat_call(:with_provider_options, *, fallback: :with_params, **, &)
+        self
+      end
+
+      def with_context(value)
+        self.context = value
+        chat = @chat
+        return self unless chat.respond_to?(:with_context)
+
+        chat.with_context(value)
         self
       end
 
@@ -227,12 +251,7 @@ module RubyLLM
         @model_string ||= config.default_model unless model_association
         return unless @model_string
 
-        model_info, _provider = RubyLLM::Models.resolve(
-          @model_string,
-          provider: @provider_string,
-          assume_exists: assume_model_exists || false,
-          config: config
-        )
+        model_info, _provider = resolve_llm_model(@model_string, provider: @provider_string, config: config)
 
         model_klass = self.class.model_class.constantize
         model_record = model_klass.find_or_create_by!(
@@ -466,6 +485,48 @@ module RubyLLM
 
       def field_declared?(record, name)
         record.class.fields.key?(name.to_s)
+      end
+
+      def dispatch_chat_call(method_name, *, fallback: nil, **, &)
+        chat_method = [method_name, fallback].compact.find { |name| to_llm.respond_to?(name) }
+        raise NoMethodError, "undefined method `#{method_name}` for #{to_llm.class}" unless chat_method
+
+        to_llm.public_send(chat_method, *, **, &)
+      end
+
+      def resolve_llm_model(model_name, provider:, config:)
+        options = { provider:, config: }
+        assume_key = models_resolve_assume_model_exists_keyword
+        options[assume_key] = assume_model_exists || false
+        RubyLLM::Models.resolve(model_name, **options)
+      end
+
+      def models_resolve_assume_model_exists_keyword
+        if method_accepts_keyword?(RubyLLM::Models.method(:resolve), :assume_model_exists)
+          :assume_model_exists
+        else
+          :assume_exists
+        end
+      end
+
+      def chat_assume_model_exists_keyword
+        method = if defined?(RubyLLM::Chat)
+                   RubyLLM::Chat.instance_method(:with_model)
+                 else
+                   to_llm.method(:with_model)
+                 end
+
+        if method_accepts_keyword?(method, :assume_model_exists)
+          :assume_model_exists
+        else
+          :assume_exists
+        end
+      end
+
+      def method_accepts_keyword?(method, keyword)
+        method.parameters.any? do |type, name|
+          type == :keyrest || (%i[key keyreq].include?(type) && name == keyword)
+        end
       end
     end
   end

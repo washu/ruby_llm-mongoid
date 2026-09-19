@@ -3,13 +3,13 @@
 require_relative "lib/ruby_llm/mongoid/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "ruby_llm-mongoid"
+  spec.name = "ruby_llm-mongoid-persistence"
   spec.version = RubyLLM::Mongoid::VERSION
   spec.authors = ["washu"]
   spec.email = ["sal.scotto@gmail.com"]
 
-  spec.summary = "Mongoid persistence for ruby_llm (acts_as_chat, acts_as_message, acts_as_tool_call, acts_as_model)"
-  spec.description = "Drop-in Mongoid replacement for ruby_llm's ActiveRecord integration. " \
+  spec.summary = "Community Mongoid persistence for RubyLLM"
+  spec.description = "Community Mongoid replacement for RubyLLM's ActiveRecord integration. " \
                      "Provides acts_as_chat, acts_as_message, acts_as_tool_call, and acts_as_model " \
                      "macros backed by MongoDB via Mongoid."
   spec.homepage = "https://github.com/washu/ruby_llm-mongoid"

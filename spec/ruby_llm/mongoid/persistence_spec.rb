@@ -77,6 +77,19 @@ RSpec.describe "LLM persistence round-trip" do
 
   describe "#with_model" do
     it "switches the chat to a different model record" do
+      resolved_model = instance_double(
+        RubyLLM::Model::Info,
+        id: "gpt-4o",
+        name: "GPT-4o",
+        provider: "openai",
+        family: "gpt-4o",
+        context_window: 128_000,
+        max_output_tokens: 16_384,
+        capabilities: [],
+        modalities: instance_double("Modalities", to_h: {}),
+        pricing: instance_double("Pricing", to_h: {}),
+        metadata: {}
+      )
       LlmModel.find_or_create_by!(model_id: "gpt-4o", provider: "openai") do |m|
         m.name = "GPT-4o"
         m.capabilities = []
@@ -85,13 +98,35 @@ RSpec.describe "LLM persistence round-trip" do
         m.metadata = {}
       end
 
+      allow(RubyLLM::Models).to receive(:resolve).and_return([resolved_model, nil])
+      allow(chat).to receive(:to_llm).and_return(double("RubyLLM::Chat", with_model: true))
       stub_openai_chat(content: "Ok.", model: "gpt-4o")
       chat.with_model("gpt-4o")
       expect(chat.model_id).to eq("gpt-4o")
     end
+
+    it "forwards RubyLLM 2 keyword arguments to the underlying chat" do
+      llm_chat = double("RubyLLM::Chat", with_model: true)
+      allow(chat).to receive(:resolve_model_from_strings)
+      allow(chat).to receive(:save!).and_return(true)
+      allow(chat).to receive(:to_llm).and_return(llm_chat)
+      allow(chat).to receive(:chat_assume_model_exists_keyword).and_return(:assume_model_exists)
+      allow(chat).to receive(:model_association).and_return(model_record)
+
+      expect(llm_chat).to receive(:with_model).with(
+        "gpt-4o-mini",
+        provider: :openai,
+        protocol: :responses,
+        assume_model_exists: true
+      )
+
+      expect(
+        chat.with_model("gpt-4o-mini", provider: :openai, protocol: :responses, assume_model_exists: true)
+      ).to eq(chat)
+    end
   end
 
-  # ─── with_temperature / with_params / with_headers / with_schema ────────────
+  # ─── with_temperature / with_provider_options / with_headers / with_schema ──
 
   describe "parameter passthrough" do
     before { stub_openai_chat(content: "ok") }
@@ -104,6 +139,10 @@ RSpec.describe "LLM persistence round-trip" do
 
     it "#with_params returns self" do
       expect(chat.with_params(max_tokens: 100)).to eq(chat)
+    end
+
+    it "#with_provider_options returns self" do
+      expect(chat.with_provider_options(max_tokens: 100)).to eq(chat)
     end
 
     it "#with_headers returns self" do
@@ -318,6 +357,21 @@ RSpec.describe "LLM persistence round-trip" do
     it "resolves model_registry_class from a String constant name" do
       RubyLLM.configure { |c| c.model_registry_class = "LlmModel" }
       expect { source.read }.not_to raise_error
+    end
+  end
+
+  describe "RubyLLM 2 compatibility helpers" do
+    it "uses assume_model_exists when RubyLLM::Models.resolve supports it" do
+      allow(chat).to receive(:method_accepts_keyword?).and_return(true)
+
+      expect(RubyLLM::Models).to receive(:resolve).with(
+        "gpt-4o-mini",
+        provider: "openai",
+        config: RubyLLM.config,
+        assume_model_exists: false
+      )
+
+      chat.send(:resolve_llm_model, "gpt-4o-mini", provider: "openai", config: RubyLLM.config)
     end
   end
 end
