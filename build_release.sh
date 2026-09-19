@@ -12,7 +12,7 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
 VERSION="$(ruby -r ./lib/ruby_llm/mongoid/version.rb -e 'puts RubyLLM::Mongoid::VERSION')"
-GEM_FILE="ruby_llm-mongoid-${VERSION}.gem"
+GEM_FILE="ruby_llm-mongoid-persistence-${VERSION}.gem"
 
 echo "Building gem version ${VERSION}..."
 rm -f "$GEM_FILE"

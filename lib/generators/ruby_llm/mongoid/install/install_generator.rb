@@ -5,7 +5,7 @@ require "rails/generators"
 module RubyLLM
   module Generators
     module Mongoid
-      # Generator that scaffolds Mongoid model files for ruby_llm-mongoid.
+      # Generator that scaffolds Mongoid model files for ruby_llm-mongoid-persistence.
       # Unlike the ActiveRecord generator there are no migrations — Mongoid models
       # declare their fields inline.
       #
@@ -19,7 +19,7 @@ module RubyLLM
         argument :model_mappings, type: :array, default: [],
                                   banner: "chat:ChatName message:MessageName ..."
 
-        desc "Creates Mongoid model files for the ruby_llm-mongoid integration."
+        desc "Creates Mongoid model files for the ruby_llm-mongoid-persistence integration."
 
         def create_model_files
           template "chat_model.rb.tt",      "app/models/#{chat_model_name.underscore}.rb"
@@ -39,7 +39,7 @@ module RubyLLM
         end
 
         def show_install_info
-          say "\n  ruby_llm-mongoid installed!", :green
+          say "\n  ruby_llm-mongoid-persistence installed!", :green
           say "\n  Next steps:", :yellow
           say "     1. Ensure mongoid.yml is configured (bin/rails g mongoid:config)"
           say "     2. Run: bin/rails ruby_llm:mongoid:create_indexes"

@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/washu/ruby_llm-mongoid/actions/workflows/ci.yml/badge.svg)](https://github.com/washu/ruby_llm-mongoid/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/washu/ruby_llm-mongoid/badge.svg?branch=main)](https://coveralls.io/github/washu/ruby_llm-mongoid?branch=main)
-[![Gem Version](https://img.shields.io/gem/v/ruby_llm-mongoid)](https://rubygems.org/gems/ruby_llm-mongoid)
+[![Gem Version](https://img.shields.io/gem/v/ruby_llm-mongoid-persistence)](https://rubygems.org/gems/ruby_llm-mongoid-persistence)
 
-Community Mongoid persistence for [RubyLLM](https://github.com/crmne/ruby_llm). This integration lives outside RubyLLM core and lets you use MongoDB as your Rails model layer instead of ActiveRecord while keeping the same `acts_as_chat`-style API.
+Community Mongoid persistence for [RubyLLM](https://github.com/crmne/ruby_llm). This integration lives outside RubyLLM core and lets you use MongoDB as your Rails model layer instead of ActiveRecord while keeping the same `acts_as_chat`-style API. The published gem name is `ruby_llm-mongoid-persistence`.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ Community Mongoid persistence for [RubyLLM](https://github.com/crmne/ruby_llm). 
 Add to your Gemfile:
 
 ```ruby
-gem "ruby_llm-mongoid"
+gem "ruby_llm-mongoid-persistence"
 ```
 
 ## Quick start

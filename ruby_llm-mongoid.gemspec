@@ -3,7 +3,7 @@
 require_relative "lib/ruby_llm/mongoid/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "ruby_llm-mongoid"
+  spec.name = "ruby_llm-mongoid-persistence"
   spec.version = RubyLLM::Mongoid::VERSION
   spec.authors = ["washu"]
   spec.email = ["sal.scotto@gmail.com"]

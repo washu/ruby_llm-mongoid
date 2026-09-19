@@ -15,7 +15,7 @@ jobs:
 
     environment:
       name: rubygems
-      url: https://rubygems.org/gems/ruby_llm-mongoid
+      url: https://rubygems.org/gems/ruby_llm-mongoid-persistence
 
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +33,10 @@ jobs:
         env:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         run: |
-          gem push ruby_llm-mongoid-*.gem
+          gem push ruby_llm-mongoid-persistence-*.gem
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: ruby_llm-mongoid-*.gem
+          files: ruby_llm-mongoid-persistence-*.gem
