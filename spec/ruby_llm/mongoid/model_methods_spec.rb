@@ -200,5 +200,17 @@ RSpec.describe "acts_as_model — class methods" do
       expect(model_record.cached_input_price_per_million).to eq(0.25)
       expect(model_record.cache_creation_input_price_per_million).to eq(0.25)
     end
+
+    it "returns false when the LLM model exposes no capability helpers" do
+      allow(model_record).to receive(:to_llm).and_return(Object.new)
+
+      expect(model_record.supports_vision?).to be(false)
+    end
+
+    it "returns nil when the LLM model exposes no pricing helpers" do
+      allow(model_record).to receive(:to_llm).and_return(Object.new)
+
+      expect(model_record.input_price_per_million).to be_nil
+    end
   end
 end
